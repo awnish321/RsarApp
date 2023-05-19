@@ -75,7 +75,8 @@
         <activity android:name=".WebViewPrivacy" />
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".Class_Activity"
             android:exported="true"

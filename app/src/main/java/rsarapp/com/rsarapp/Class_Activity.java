@@ -91,11 +91,7 @@ public class Class_Activity extends AppCompatActivity {
     File logobg;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
-
-    String Pref_Bg_Code,Pref_Top_Bg_Code,Pref_Button_Bg,Pref_School_UI,Pref_School_name,
-            Pref_Fd_School_name,Pref_Class_List,Pref_Restric_Id,Pref_Sch_Name_Color,Str_Notify_Msg_Link,Pref_Email,Pref_Mob;
-
-
+    String Pref_Bg_Code,Pref_Top_Bg_Code,Pref_Button_Bg,Pref_School_UI,Pref_School_name, Pref_Fd_School_name,Pref_Class_List,Pref_Restric_Id,Pref_Sch_Name_Color,Str_Notify_Msg_Link,Pref_Email,Pref_Mob;
 
     SetterGetter_Sub_Chap vinsgetter;
     ArrayList<SetterGetter_Sub_Chap> vinsquesarrayList;
@@ -248,6 +244,7 @@ public class Class_Activity extends AppCompatActivity {
                 }
 
             });
+
             otpdialog.show();
         }
         else
@@ -255,9 +252,7 @@ public class Class_Activity extends AppCompatActivity {
             CallClassUrl();
         }
 
-
         //----- Device Details
-
 
        /* dbHandler = new DBHandler(this);
 
@@ -271,7 +266,6 @@ public class Class_Activity extends AppCompatActivity {
 
       Show_Gridview_Offline();*/
     }
-
     private void OtpRefresh() {
 
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -425,8 +419,6 @@ public class Class_Activity extends AppCompatActivity {
 
             DeletePreviousData();
 
-
-
             ClassUrl();
 
             NotifyUpdate();
@@ -450,19 +442,15 @@ public class Class_Activity extends AppCompatActivity {
 
             dialog.show();
 
-
-
         } else {
 
             dbHandler = new DBHandler(this);
-
 
             Class_ID_Array = new ArrayList<String>();
 
             Class_NAME_Array = new ArrayList<String>();
 
             ShowSQLiteDBdata() ;
-
 
             //Show_Gridview_Offline();
             Misc.showAlertDialog(Class_Activity.this, "No Internet Connection",

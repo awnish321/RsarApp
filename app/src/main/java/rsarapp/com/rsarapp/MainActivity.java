@@ -11,8 +11,10 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 
 
@@ -25,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -34,7 +37,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.viewpager.widget.ViewPager;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -42,6 +47,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.viewpagerindicator.CirclePageIndicator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -84,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Boolean isInternetPresent = false;
     // Connection detector class
     ConnectionDetector cd;
-
     ArrayList<SetterGetter_Sub_Chap> vinsquesarrayList;
     JSONArray DropClass_Data;
     SetterGetter_Sub_Chap vinsgetter;
@@ -105,22 +110,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String Pref_Bg_Code, Pref_Top_Bg_Code, Pref_Button_Bg, Pref_School_name, Pref_Restric_Id, Str_Notify_Msg_Link, Pref_Email, Pref_Mob;
     String  Sub_Id, Sub_Name, Class_Id, Db_Class_Id, Str_Restrict_SD, Str_Otp;
     TextView text11,privacy,about;
+    JSONArray Banner_Data;
+    private ArrayList<BannerModel.BannerDatum> bannerDatumArrayList;
+    private BannerModel.BannerDatum bannerDatum;
+    Toolbar toolbar;
+    private static ViewPager mPager;
+    private static int currentPage = 0;
+    private static int NUM_PAGES = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ImageView img = (ImageView) toolbar.findViewById(R.id.imgHelp);
+
         getintents=getIntent();
-        forget_details=findViewById(R.id.forgets);
+        forget_details=findViewById(R.id.txtForgets);
         preferences = getSharedPreferences("RSAR_APP", Context.MODE_PRIVATE);
         Pref_School_UI = preferences.getString("Rsar_School_UI", "");
         Log.d("school1",Pref_School_UI);
         Pref_Restric_Id = preferences.getString("Rsar_Restric_ID", "");
         Str_Otp_Value = preferences.getString("Rsar_Otp_Value", "");//Rsar_Otp_Value
         Pref_Email = preferences.getString("Rsar_Pref_Email", "");
-        privacy=findViewById(R.id.text34);
-        about=findViewById(R.id.text35);
+        privacy=findViewById(R.id.txtPrivacyPolicy);
+        about=findViewById(R.id.txtAboutUs);
 
         privacy.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -197,11 +214,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
+        img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        Et_Stu_Name=(EditText)findViewById(R.id.ET_Name);
-        Et_Email=(EditText)findViewById(R.id.ET_Email);
-        Et_Mob_no=(EditText)findViewById(R.id.ET_Mobile_No);
-        Btn_Submit =(Button)findViewById(R.id.Btn_Submit);
+                final Dialog dialogss = new Dialog(MainActivity.this);
+                dialogss.setContentView(R.layout.popup_help);
+                dialogss.setCancelable(true);
+
+                // set the custom dialog components - text, image and button
+                LinearLayout ln_outline = (LinearLayout) dialogss.findViewById(R.id.dia_ln_outline);
+
+                mPager = (ViewPager) dialogss.findViewById(R.id.pager);
+                mPager.setAdapter(new Help_Image_Adapter(MainActivity.this, bannerDatumArrayList));
+
+                CirclePageIndicator indicator = (CirclePageIndicator) dialogss.findViewById(R.id.indicator);
+                indicator.setViewPager(mPager);
+                final float density = getResources().getDisplayMetrics().density;
+                indicator.setRadius(5 * density);
+                NUM_PAGES = bannerDatumArrayList.size();
+                // Auto start of viewpager
+                final Handler handler = new Handler();
+                final Runnable Update = new Runnable() {
+                    public void run() {
+                        if (currentPage == NUM_PAGES) {
+                            currentPage = 0;
+                        }
+                        mPager.setCurrentItem(currentPage++, true);
+                    }
+                };
+                indicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+                    @Override
+                    public void onPageSelected(int position) {
+                        currentPage = position;
+
+                    }
+
+                    @Override
+                    public void onPageScrolled(int pos, float arg1, int arg2) {
+
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int pos) {
+
+                    }
+                });
+                dialogss.show();
+            }
+        });
+
+
+        Et_Stu_Name=(EditText)findViewById(R.id.edtName);
+        Et_Email=(EditText)findViewById(R.id.edtEmailId);
+        Et_Mob_no=(EditText)findViewById(R.id.edtMobileNumber);
+        Btn_Submit =(Button)findViewById(R.id.btnSubmit);
         radioUserGroup = (RadioGroup) findViewById(R.id.radioUser);
         sname=Et_Stu_Name.getText().toString();
         semail=Et_Email.getText().toString();
@@ -233,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         isInternetPresent = cd.isConnectingToInternet();
         // check for Internet status
         if (isInternetPresent) {
+            callHelpBannerApi();
             DropDownService();
             String message = "Please Wait....";
             dialog = new ProgressHUD(MainActivity.this, R.style.ProgressHUD);
@@ -260,7 +329,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     "You don't have internet connection.", false);
         }
 
-
         ButtonsDetails();
         //----- Device Details
         GetDevicedetails();
@@ -274,7 +342,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
         }
     }
-
     @Override
     protected void onRestart() {
         super.onRestart();
@@ -285,7 +352,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Et_Email.setText(s12);
         Et_Mob_no.setText(s13);
     }
-
     @Override
     public void onBackPressed() {
         Intent a = new Intent(Intent.ACTION_MAIN);
@@ -293,7 +359,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(a);
     }
-
     private void GetDevicedetails() {
 
         Device_Id = Settings.Secure.getString(getApplicationContext().getContentResolver(),Settings.Secure.ANDROID_ID);
@@ -304,17 +369,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Mob_Model = android.os.Build.MODEL;
 
     }
-
-
     private void ButtonsDetails() {
 
         Spin= findViewById(R.id.spinner);
         //  Spin.setOnItemSelectedListener(this);
-        Lnr_Reg_Class=(LinearLayout)findViewById(R.id.Reg_Class);
-        Et_Stu_Name=(EditText)findViewById(R.id.ET_Name);
-        Et_Email=(EditText)findViewById(R.id.ET_Email);
-        Et_Mob_no=(EditText)findViewById(R.id.ET_Mobile_No);
-        Btn_Submit =(Button)findViewById(R.id.Btn_Submit);
+        Lnr_Reg_Class=(LinearLayout)findViewById(R.id.llClass);
+        Et_Stu_Name=(EditText)findViewById(R.id.edtName);
+        Et_Email=(EditText)findViewById(R.id.edtEmailId);
+        Et_Mob_no=(EditText)findViewById(R.id.edtMobileNumber);
+        Btn_Submit =(Button)findViewById(R.id.btnSubmit);
         radioUserGroup = (RadioGroup) findViewById(R.id.radioUser);
         sname=Et_Stu_Name.getText().toString();
         semail=Et_Email.getText().toString();
@@ -543,8 +606,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(postRequest);
 
     }
-
-
     @Override
     public void onClick(View v) {
         if(v == Btn_Submit) {
@@ -618,7 +679,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Str_Status=object.getString("Status");
                                 Str_Msg =object.getString("Message");
                                 System.out.println("abbb"+"    "+Str_Status);
-                                if(Str_Status.equalsIgnoreCase("True")) {
+                                if(Str_Status.equalsIgnoreCase("True"))
+                                {
                                     Str_UserType = object.getString("User_Type");
                                     Str_ClassID = object.getString("Class_Id");
                                     Str_School_UI = object.getString("School_UI");
@@ -715,9 +777,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             protected HashMap<String, String> getParams()
             {
-//hghg
                 HashMap<String, String>  params = new HashMap<String, String>();
-
                 params.put("classId", DClass_ID);
                 params.put("userType", radioUserButton.getText().toString());
                 params.put("mobile", Str_Mobile);
@@ -740,7 +800,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         queue.add(postRequest);
 
     }
-
     @SuppressWarnings("deprecation")
     public void showAlertDialog(Context context, String title, String message, Boolean status) {
         AlertDialog alertDialog = new AlertDialog.Builder(context).create();
@@ -826,7 +885,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -896,4 +954,91 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+
+    private void callHelpBannerApi() {
+        // TODO Auto-generated method stub
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String urlmanual = Networking.url + "banners.php?";
+        StringRequest postRequest = new StringRequest(Request.Method.POST, urlmanual,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            bannerDatumArrayList = new ArrayList<>();
+                            bannerDatumArrayList.clear();
+                            JSONArray array;
+                            array = new JSONArray(response);
+                            JSONObject object = new JSONObject();
+                            for (int i = 0; i < array.length(); i++) {
+                                object = array.getJSONObject(i);
+
+                                Str_Status = object.get("Status").toString();
+
+                                Str_Msg = object.get("Message").toString();
+
+                                if (Str_Status.equalsIgnoreCase("True")) {
+                                    Banner_Data = object.getJSONArray("Banner_Data");
+
+                                    for (int j = 0; j < Banner_Data.length(); j++) {
+                                        JSONObject ObjectData;
+                                        ObjectData = new JSONObject(Banner_Data.getJSONObject(j).toString());
+
+                                        String BannerId = ObjectData.getString("Banner_Id");
+                                        String BannerURL = ObjectData.getString("Banner_URL");
+
+                                        bannerDatum = new BannerModel.BannerDatum();
+                                        bannerDatum.setBannerId(BannerId);
+                                        bannerDatum.setBannerURL(BannerURL);
+                                        bannerDatumArrayList.add(bannerDatum);
+                                    }
+
+                                } else {
+                                    final Dialog dialogss = new Dialog(MainActivity.this);
+                                    dialogss.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                                    dialogss.setContentView(R.layout.alert_dialog);
+                                    dialogss.setCancelable(true);
+
+                                    // set the custom dialog components - text, image and button
+                                    LinearLayout ln_outline = (LinearLayout) dialogss.findViewById(R.id.dia_ln_outline);
+                                    View view = (View) dialogss.findViewById(R.id.dia_view);
+                                    TextView Error_text = (TextView) dialogss.findViewById(R.id.dia_error_title);
+                                    TextView text = (TextView) dialogss.findViewById(R.id.dia_error_msg);
+                                    text.setText(Str_Msg);
+                                    Button btn_yes = (Button) dialogss.findViewById(R.id.dia_b_yes);
+                                    btn_yes.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            dialogss.dismiss();
+                                        }
+                                    });
+                                    dialogss.show();
+                                }
+                            }
+
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        // Log.d("Error.Response", error.getMessage());
+                    }
+                }
+        ) {
+            @Override
+            protected HashMap<String, String> getParams() {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("action", "banner");
+                return params;
+            }
+        };
+        queue.add(postRequest);
+
+    }
+
 }
